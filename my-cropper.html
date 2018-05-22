@@ -34,11 +34,11 @@
             type: Object,
             value: {}
           },
-          form:{
-            type:Object,
-            value:{
-              email:'dainokung2535@gmail.com',
-              password:'1234'
+          form: {
+            type: Object,
+            value: {
+              email: 'dainokung2535@gmail.com',
+              password: '1234'
             }
           },
           options: {
@@ -51,14 +51,14 @@
           }
         }
       }
-      login(){
+      login() {
         console.log(this.form)
-        axios.post('https://api.thaifixer.com/api/v1/auth/login',this.form)
-        .then((res)=>{
-          console.log(res.data.data)
-          this.form.id = res.data.data.id;
-          axios.defaults.headers.Authorization = res.data.data.token;
-        })
+        axios.post('https://api.thaifixer.com/api/v1/auth/login', this.form)
+          .then((res) => {
+            console.log(res.data.data)
+            this.form.id = res.data.data.id;
+            axios.defaults.headers.Authorization = res.data.data.token;
+          })
       }
       editImg(e) {
         if (!window.Cropper) {
@@ -84,7 +84,7 @@
         });
       }
       cropImg() {
-        console.log( this._cropper.getCroppedCanvas({
+       var canvas = this._cropper.getCroppedCanvas({
           width: 160,
           height: 90,
           minWidth: 256,
@@ -94,7 +94,31 @@
           fillColor: '#fff',
           imageSmoothingEnabled: false,
           imageSmoothingQuality: 'high',
-        }).toDataURL())
+        })
+        canvas.toBlob( (blob) =>{
+          // console.log(blob)
+          var formData = new FormData();
+          formData.append('croppedImage', blob);
+          formData.append('user_id', this.form.id)
+          axios.post('https://api.thaifixer.com/api/v1/upload/image/avatar',formData)
+          .then((res)=>{
+            console.log(res.data.data)
+          })
+
+        })
+        // console.log(canvas)
+        // var reader = new FileReader();
+        // reader.onload = function (event) {
+        //   var img = new Image();
+        //   img.onload = function () {
+        //     canvas.width = img.width;
+        //     canvas.height = img.height;
+        //     ctx.drawImage(img, 0, 0);
+        //   }
+        //   img.src = event.target.result;
+        // }
+        // reader.readAsDataURL(e.target.files[0]);
+
         // this._cropper.getCroppedCanvas({
         //   width: 160,
         //   height: 90,
