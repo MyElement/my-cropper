@@ -1,0 +1,134 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="./node_modules/cropperjs/dist/cropper.min.js"></script>
+<dom-module id="my-cropper">
+  <link rel="import" type="css" href="./node_modules/cropperjs/dist/cropper.min.css">
+  <template>
+    <input type="file" name="file" on-change="readURL" id="profile-img">
+    <br>
+    <div id="wrapper">
+      <img id="profile" width="500px" on-load="editImg" />
+    </div>
+    <button on-click="cropImg">Crop</button>
+    <br>
+    <!-- <input type="text" placeholder="username" value="{{form.username::input}}">
+    <input type="passowrd" placeholder="password" value="{{form.password::input}}"> -->
+    <button on-click="login">login</button>
+  </template>
+
+  <script>
+    class MyCropper extends Polymer.Element {
+      static get is() {
+        return 'my-cropper';
+      }
+      static get properties() {
+        return {
+          prop1: {
+            type: String,
+            value: 'my-cropper'
+          },
+          cropper: {
+            type: Object
+          },
+          data: {
+            type: Object,
+            value: {}
+          },
+          form:{
+            type:Object,
+            value:{
+              email:'dainokung2535@gmail.com',
+              password:'1234'
+            }
+          },
+          options: {
+            type: Object,
+            value: function () {
+              return {
+                aspectRatio: 1
+              }
+            }
+          }
+        }
+      }
+      login(){
+        console.log(this.form)
+        axios.post('https://api.thaifixer.com/api/v1/auth/login',this.form)
+        .then((res)=>{
+          console.log(res.data.data)
+          this.form.id = res.data.data.id;
+          axios.defaults.headers.Authorization = res.data.data.token;
+        })
+      }
+      editImg(e) {
+        if (!window.Cropper) {
+          return console.error('Cropper has not been initialized');
+        }
+        if (this._cropper) {
+          this._cropper.destroy();
+        }
+        var options = Object.assign({}, this.options);
+        var wrapper = this.$.wrapper;
+        options._ready = options.ready;
+        options.ready = function (e) {
+          wrapper.removeAttribute('style');
+          if (options._ready) {
+            return options._ready(e);
+          }
+        };
+        this._cropper = new window.Cropper(this.$.profile, {
+          aspectRatio: 16 / 9,
+          crop: (event) => {
+            this.data = event.detail
+          }
+        });
+      }
+      cropImg() {
+        console.log( this._cropper.getCroppedCanvas({
+          width: 160,
+          height: 90,
+          minWidth: 256,
+          minHeight: 256,
+          maxWidth: 4096,
+          maxHeight: 4096,
+          fillColor: '#fff',
+          imageSmoothingEnabled: false,
+          imageSmoothingQuality: 'high',
+        }).toDataURL())
+        // this._cropper.getCroppedCanvas({
+        //   width: 160,
+        //   height: 90,
+        //   minWidth: 256,
+        //   minHeight: 256,
+        //   maxWidth: 4096,
+        //   maxHeight: 4096,
+        //   fillColor: '#fff',
+        //   imageSmoothingEnabled: false,
+        //   imageSmoothingQuality: 'high',
+        // }).toDataURL((val) => {
+        //   var formData = new FormData();
+        //   formData.append('avatar', val);
+        //   formData.append('user_id', this.form.id)
+        //   axios.post('https://api.thaifixer.com/api/v1/upload/image/avatar',formData)
+        //   .then((res)=>{
+        //     console.log(res.data.data)
+        //   })
+        //   console.log(val)
+        // })
+        // this._cropper.disable()
+      }
+      readURL(input) {
+        if (input.target.files && input.target.files[0]) {
+          console.log(input.target.files[0])
+          var reader = new FileReader();
+          reader.onload = (e) => {
+            this.$.profile.setAttribute('src', e.target.result)
+          };
+          reader.readAsDataURL(input.target.files[0]);
+        }
+      }
+    }
+
+    window.customElements.define(MyCropper.is, MyCropper);
+  </script>
+</dom-module>
