@@ -10,6 +10,7 @@
       <img id="profile" width="500px" on-load="editImg" />
     </div>
     <button on-click="cropImg">Crop</button>
+    <button on-click="defalutUpload">upload</button>
     <br>
     <!-- <input type="text" placeholder="username" value="{{form.username::input}}">
     <input type="passowrd" placeholder="password" value="{{form.password::input}}"> -->
@@ -84,41 +85,40 @@
         });
       }
       cropImg() {
-       var canvas = this._cropper.getCroppedCanvas({
-          width: 160,
-          height: 90,
-          minWidth: 256,
-          minHeight: 256,
-          maxWidth: 4096,
-          maxHeight: 4096,
-          fillColor: '#fff',
-          imageSmoothingEnabled: false,
-          imageSmoothingQuality: 'high',
-        })
-        canvas.toBlob( (blob) =>{
-          // console.log(blob)
+        var initialAvatarURL;
+        var canvas;
+        var avatar = this.$.profile
+        canvas = this._cropper.getCroppedCanvas({
+          width: 500,
+          height: 500,
+        });
+        initialAvatarURL = avatar.src;
+        avatar.src = canvas.toDataURL();
+        canvas.toBlob((blob) => {
+          console.log(blob)
           var formData = new FormData();
-          formData.append('croppedImage', blob);
+          formData.append('avatar', blob);
           formData.append('user_id', this.form.id)
-          axios.post('https://api.thaifixer.com/api/v1/upload/image/avatar',formData)
-          .then((res)=>{
-            console.log(res.data.data)
-          })
+          // axios.post('https://api.thaifixer.com/api/v1/upload/image/avatar', formData)
+          //   .then((res) => {
+          //     console.log(res.data.data)
+          //   })
+        }, 'image/jpeg')
+      }
+      defalutUpload(){
 
-        })
-        // console.log(canvas)
-        // var reader = new FileReader();
-        // reader.onload = function (event) {
-        //   var img = new Image();
-        //   img.onload = function () {
-        //     canvas.width = img.width;
-        //     canvas.height = img.height;
-        //     ctx.drawImage(img, 0, 0);
-        //   }
-        //   img.src = event.target.result;
-        // }
-        // reader.readAsDataURL(e.target.files[0]);
-
+      }
+      readURL(input) {
+        if (input.target.files && input.target.files[0]) {
+          console.log(input.target.files[0])
+          var reader = new FileReader();
+          reader.onload = (e) => {
+            this.$.profile.setAttribute('src', e.target.result)
+          };
+          reader.readAsDataURL(input.target.files[0]);
+        }
+      }
+      upload() {
         // this._cropper.getCroppedCanvas({
         //   width: 160,
         //   height: 90,
@@ -139,17 +139,6 @@
         //   })
         //   console.log(val)
         // })
-        // this._cropper.disable()
-      }
-      readURL(input) {
-        if (input.target.files && input.target.files[0]) {
-          console.log(input.target.files[0])
-          var reader = new FileReader();
-          reader.onload = (e) => {
-            this.$.profile.setAttribute('src', e.target.result)
-          };
-          reader.readAsDataURL(input.target.files[0]);
-        }
       }
     }
 
